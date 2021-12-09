@@ -126,6 +126,24 @@ class DDGSolver(AbstractSolver):
             infobox[k] = entry["value"]
         return infobox, related_topics
 
+    def extract_and_search(self, query, context=None):
+        context = context or {}
+        lang = context.get("lang") or self.default_lang
+        lang = lang.split("-")[0]
+        # match an infobox field with some basic regexes
+        # (primitive intent parsing)
+        selected, key = self.match_infobox_field(query, lang)
+        if key:
+            selected = self.extract_keyword(selected, lang)
+            infobox = self.get_infobox(selected, lang)[0] or {}
+            answer = infobox.get(key)
+            if answer:
+                return answer
+        # extract the best keyword with some regexes or fallback to RAKE
+        query = self.extract_keyword(query, lang)
+        data = self.search(query, context)
+        return data
+
     # officially exported Solver methods
     def get_data(self, query, context):
         # duck duck go api request
@@ -149,21 +167,3 @@ class DDGSolver(AbstractSolver):
         data = self.extract_and_search(query, context)
         # summary
         return data.get("AbstractText")
-
-    def extract_and_search(self, query, context=None):
-        context = context or {}
-        lang = context.get("lang") or self.default_lang
-        lang = lang.split("-")[0]
-        # match an infobox field with some basic regexes
-        # (primitive intent parsing)
-        selected, key = self.match_infobox_field(query, lang)
-        if key:
-            selected = self.extract_keyword(selected, lang)
-            infobox = self.get_infobox(selected, lang)[0] or {}
-            answer = infobox.get(key)
-            if answer:
-                return answer
-        # extract the best keyword with some regexes or fallback to RAKE
-        query = self.extract_keyword(query, lang)
-        data = self.search(query, context)
-        return data
