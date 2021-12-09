@@ -156,7 +156,7 @@ class DDGSolver(AbstractSolver):
         return data
 
     def get_image(self, query, context=None):
-        data = self.search(query, context)
+        data = self.extract_and_search(query, context)
         image = data.get("Image") or \
                 "https://github.com/JarbasSkills/skill-ddg/raw/master/ui/logo.png"
         if image.startswith("/"):
