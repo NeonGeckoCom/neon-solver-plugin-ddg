@@ -53,7 +53,7 @@ class DDGSolver(AbstractSolver):
         else:
             # let's try to extract the best keyword and use it as query
             _, context = self.rake.transform([query], {"lang": lang})
-            kwords = context["keywords"]
+            kwords = context.get("keywords")
             if not kwords:
                 return None
             match = kwords[0][0]
@@ -146,6 +146,12 @@ class DDGSolver(AbstractSolver):
         return image
 
     def get_spoken_answer(self, query, context):
+        data = self.extract_and_search(query, context)
+        # summary
+        return data.get("AbstractText")
+
+    def extract_and_search(self, query, context=None):
+        context = context or {}
         lang = context.get("lang") or self.default_lang
         lang = lang.split("-")[0]
         # match an infobox field with some basic regexes
@@ -160,5 +166,4 @@ class DDGSolver(AbstractSolver):
         # extract the best keyword with some regexes or fallback to RAKE
         query = self.extract_keyword(query, lang)
         data = self.search(query, context)
-        # summary
-        return data.get("AbstractText")
+        return data
