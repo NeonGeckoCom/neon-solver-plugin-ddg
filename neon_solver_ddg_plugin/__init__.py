@@ -22,16 +22,20 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import requests
+from datetime import timedelta
+
 import simplematch
+from neon_utterance_RAKE_plugin import RAKEExtractor
+from requests_cache import CachedSession
+
 from neon_solvers import AbstractSolver
-from neon_utterance_RAKE_plugin import RAKETagger
 
 
 class DDGSolver(AbstractSolver):
     def __init__(self):
         super(DDGSolver, self).__init__(name="DuckDuckGo", priority=75)
-        self.rake = RAKETagger()
+        self.rake = RAKEExtractor()
+        self.session = CachedSession(backend="memory", expire_after=timedelta(minutes=5))
 
     def extract_keyword(self, query, lang="en"):
         query = query.lower()
@@ -126,12 +130,20 @@ class DDGSolver(AbstractSolver):
     def get_data(self, query, context):
         # duck duck go api request
         try:
-            data = requests.get("https://api.duckduckgo.com",
-                                params={"format": "json",
-                                        "q": query}).json()
+            data = self.session.get("https://api.duckduckgo.com",
+                                    params={"format": "json",
+                                            "q": query}).json()
         except:
             return {}
         return data
+
+    def get_image(self, query, context=None):
+        data = self.get_data(query, context)
+        image = data.get("Image") or \
+                "https://github.com/JarbasSkills/skill-ddg/raw/master/ui/logo.png"
+        if image.startswith("/"):
+            image = "https://duckduckgo.com" + image
+        return image
 
     def get_spoken_answer(self, query, context):
         lang = context.get("lang") or self.default_lang
