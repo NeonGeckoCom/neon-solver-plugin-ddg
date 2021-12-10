@@ -216,7 +216,3 @@ class DDGSolver(AbstractSolver):
                   k != "instance of"]  # spammy and sounds bad when spokem
         return steps
 
-
-s = DDGSolver().long_answer("Elon Musk")
-from pprint import pprint
-pprint(s)
