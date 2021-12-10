@@ -25,10 +25,9 @@
 from datetime import timedelta
 
 import simplematch
+from neon_solvers import AbstractSolver
 from neon_utterance_RAKE_plugin import RAKEExtractor
 from requests_cache import CachedSession
-
-from neon_solvers import AbstractSolver
 
 
 class DDGSolver(AbstractSolver):
@@ -115,8 +114,8 @@ class DDGSolver(AbstractSolver):
 
         return None, None
 
-    def get_infobox(self, query, lang="en"):
-        data = self.search(query, lang)  # handles translation
+    def get_infobox(self, query, context=None):
+        data = self.extract_and_search(query, context)  # handles translation
         # parse infobox
         related_topics = [t.get("Text") for t in data.get("RelatedTopics", [])]
         infobox = {}
@@ -130,22 +129,16 @@ class DDGSolver(AbstractSolver):
         """
         extract search term from query and perform search
         """
-        context = context or {}
-        lang = context.get("lang") or self.default_lang
-        lang = lang.split("-")[0]
-        # match an infobox field with some basic regexes
-        # (primitive intent parsing)
-        selected, key = self.match_infobox_field(query, lang)
-        if key:
-            selected = self.extract_keyword(selected, lang)
-            infobox = self.get_infobox(selected, lang)[0] or {}
-            answer = infobox.get(key)
-            if answer:
-                return answer
+        query, context, lang = self._tx_query(query, context)
+
+        # match the full query
+        data = self.get_data(query, context)
+        if data:
+            return data
+        
         # extract the best keyword with some regexes or fallback to RAKE
-        query = self.extract_keyword(query, lang)
-        data = self.search(query, context)
-        return data
+        kw = self.extract_keyword(query, lang)
+        return self.get_data(kw, context)
 
     # officially exported Solver methods
     def get_data(self, query, context):
@@ -179,5 +172,51 @@ class DDGSolver(AbstractSolver):
         query assured to be in self.default_lang
         return a single sentence text response
         """
+        query, context, lang = self._tx_query(query, context)
+        # match an infobox field with some basic regexes
+        # (primitive intent parsing)
+        selected, key = self.match_infobox_field(query, lang)
+        if key:
+            selected = self.extract_keyword(selected, lang)
+            infobox = self.get_infobox(selected, context)[0] or {}
+            answer = infobox.get(key)
+            if answer:
+                return answer
+
+        # return summary
         data = self.extract_and_search(query, context)
         return data.get("AbstractText")
+
+    def get_expanded_answer(self, query, context=None):
+        """
+        query assured to be in self.default_lang
+        return a list of ordered steps to expand the answer, eg, "tell me more"
+
+        {
+            "title": "optional",
+            "summary": "speak this",
+            "img": "optional/path/or/url
+        }
+        :return:
+        """
+        data = self.get_data(query, context)
+        img = self.get_image(query, context)
+        steps = [{
+            "title": query,
+            "summary": s,
+            "img": img
+        } for s in self.sentence_split(data.get("AbstractText", ""), -1) if s]
+
+        infobox, _ = self.get_infobox(query)
+        steps += [{"title": k,
+                 "summary": k + " - " + str(v),
+                 "img": self.get_image(query)} for k, v in infobox.items()
+                  if not k.endswith(" id") and  #itunes id
+                  not k.endswith(" profile") and  # twitter profile
+                  k != "instance of"]  # spammy and sounds bad when spokem
+        return steps
+
+
+s = DDGSolver().long_answer("Elon Musk")
+from pprint import pprint
+pprint(s)
