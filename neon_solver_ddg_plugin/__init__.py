@@ -127,6 +127,9 @@ class DDGSolver(AbstractSolver):
         return infobox, related_topics
 
     def extract_and_search(self, query, context=None):
+        """
+        extract search term from query and perform search
+        """
         context = context or {}
         lang = context.get("lang") or self.default_lang
         lang = lang.split("-")[0]
@@ -146,6 +149,10 @@ class DDGSolver(AbstractSolver):
 
     # officially exported Solver methods
     def get_data(self, query, context):
+        """
+        query assured to be in self.default_lang
+        return a dict response
+        """
         # duck duck go api request
         try:
             data = self.session.get("https://api.duckduckgo.com",
@@ -156,6 +163,10 @@ class DDGSolver(AbstractSolver):
         return data
 
     def get_image(self, query, context=None):
+        """
+        query assured to be in self.default_lang
+        return path/url to a single image to acompany spoken_answer
+        """
         data = self.extract_and_search(query, context)
         image = data.get("Image") or \
                 "https://github.com/JarbasSkills/skill-ddg/raw/master/ui/logo.png"
@@ -164,6 +175,9 @@ class DDGSolver(AbstractSolver):
         return image
 
     def get_spoken_answer(self, query, context):
+        """
+        query assured to be in self.default_lang
+        return a single sentence text response
+        """
         data = self.extract_and_search(query, context)
-        # summary
         return data.get("AbstractText")
