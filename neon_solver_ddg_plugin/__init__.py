@@ -210,7 +210,7 @@ class DDGSolver(AbstractSolver):
         infobox, _ = self.get_infobox(query)
         steps += [{"title": k,
                  "summary": k + " - " + str(v),
-                 "img": self.get_image(query)} for k, v in infobox.items()
+                 "img": img} for k, v in infobox.items()
                   if not k.endswith(" id") and  #itunes id
                   not k.endswith(" profile") and  # twitter profile
                   k != "instance of"]  # spammy and sounds bad when spokem
