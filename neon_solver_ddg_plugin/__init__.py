@@ -25,15 +25,14 @@
 from datetime import timedelta
 
 import simplematch
-from neon_solvers import AbstractSolver
-from neon_utterance_RAKE_plugin import RAKEExtractor
 from requests_cache import CachedSession
+
+from neon_solvers import AbstractSolver
 
 
 class DDGSolver(AbstractSolver):
     def __init__(self):
         super(DDGSolver, self).__init__(name="DuckDuckGo", priority=75)
-        self.rake = RAKEExtractor()
         self.session = CachedSession(backend="memory", expire_after=timedelta(minutes=5))
 
     def extract_keyword(self, query, lang="en"):
@@ -50,17 +49,9 @@ class DDGSolver(AbstractSolver):
         if match:
             match = match["query"]
         else:
-            # let's try to extract the best keyword and use it as query
-            _, context = self.rake.transform([query], {"lang": lang})
-            kwords = context.get("keywords")
-            if not kwords:
-                return None
-            match = kwords[0][0]
+            return None
 
-        return self._rm_noise(match)
-
-    def _rm_noise(self, query):
-        words = query.split(" ")
+        words = match.split(" ")
         return " ".join([w for w in words if len(w) > 2])
 
     @staticmethod
@@ -135,7 +126,7 @@ class DDGSolver(AbstractSolver):
         data = self.get_data(query, context)
         if data:
             return data
-        
+
         # extract the best keyword with some regexes or fallback to RAKE
         kw = self.extract_keyword(query, lang)
         return self.get_data(kw, context)
@@ -167,15 +158,22 @@ class DDGSolver(AbstractSolver):
             image = "https://duckduckgo.com" + image
         return image
 
-    def get_spoken_answer(self, query, context):
+    def get_spoken_answer(self, query, context=None):
         """
         query assured to be in self.default_lang
         return a single sentence text response
         """
         query, context, lang = self._tx_query(query, context)
+
+        # HACK - cleanup some common translation mess ups
+        # this is properly solving by using a good translate plugin
+        # only common mistakes in default libretranslate plugin are handled
+        query = query.replace("who is is ", "who is ")
+
         # match an infobox field with some basic regexes
         # (primitive intent parsing)
         selected, key = self.match_infobox_field(query, lang)
+
         if key:
             selected = self.extract_keyword(selected, lang)
             infobox = self.get_infobox(selected, context)[0] or {}
@@ -209,10 +207,9 @@ class DDGSolver(AbstractSolver):
 
         infobox, _ = self.get_infobox(query)
         steps += [{"title": k,
-                 "summary": k + " - " + str(v),
-                 "img": img} for k, v in infobox.items()
-                  if not k.endswith(" id") and  #itunes id
+                   "summary": k + " - " + str(v),
+                   "img": img} for k, v in infobox.items()
+                  if not k.endswith(" id") and  # itunes id
                   not k.endswith(" profile") and  # twitter profile
                   k != "instance of"]  # spammy and sounds bad when spokem
         return steps
-
