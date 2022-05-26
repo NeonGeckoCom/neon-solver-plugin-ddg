@@ -24,6 +24,7 @@
 # SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from datetime import timedelta
 
+# TODO use padacioso and allow localization of "intents"
 import simplematch
 from requests_cache import CachedSession
 
@@ -32,7 +33,7 @@ from neon_solvers import AbstractSolver
 
 class DDGSolver(AbstractSolver):
     def __init__(self):
-        super(DDGSolver, self).__init__(name="DuckDuckGo", priority=75)
+        super(DDGSolver, self).__init__(name="DuckDuckGo", priority=75, config={"lang": "en"})
         self.session = CachedSession(backend="memory", expire_after=timedelta(minutes=5))
 
     def extract_keyword(self, query, lang="en"):
