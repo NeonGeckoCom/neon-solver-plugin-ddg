@@ -22,6 +22,7 @@ jobs:
           python -m pip install build wheel
       - name: Install core repo
         run: |
+          pip install git+https://github.com/NeonGeckoCom/neon_solvers
           pip install .
       - name: Install test dependencies
         run: |
