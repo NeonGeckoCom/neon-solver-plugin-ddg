@@ -47,3 +47,16 @@ class TestSolverBaseMethods(unittest.TestCase):
         solver.cache.clear()
         ans = solver.search("some query")
         solver.get_data.assert_called()
+
+    def test_translation(self):
+        solver = DDGSolver()
+        solver.translator.translate = Mock()
+        solver.translator.translate.return_value = "a wild translation appears"
+
+        # no translation
+        ans = solver.spoken_answer("some query")
+        solver.translator.translate.assert_not_called()
+
+        # translation
+        ans = solver.spoken_answer("not english", context={"lang": "unk"})
+        solver.translator.translate.assert_called()
