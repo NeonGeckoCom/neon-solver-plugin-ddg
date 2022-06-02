@@ -144,6 +144,10 @@ class DDGSolver(AbstractSolver):
                                     params={"format": "json",
                                             "q": query}).json()
         except:
+            # often names will fail unless properly capitalized
+            # retry search, unless there more than 4 words in query
+            if len(query.split()) < 5 and query.title() != query:
+                return self.get_data(query.title(), context)
             return {}
         return data
 
