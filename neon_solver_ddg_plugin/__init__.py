@@ -33,7 +33,8 @@ from neon_solvers import AbstractSolver
 
 class DDGSolver(AbstractSolver):
     def __init__(self):
-        super(DDGSolver, self).__init__(name="DuckDuckGo", priority=75, config={"lang": "en"})
+        super().__init__(name="DuckDuckGo", priority=75, config={"lang": "en"},
+                         enable_cache=False, enable_tx=True)
         self.session = CachedSession(backend="memory", expire_after=timedelta(minutes=5))
 
     def extract_keyword(self, query, lang="en"):
