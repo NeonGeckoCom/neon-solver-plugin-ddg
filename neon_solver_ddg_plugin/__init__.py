@@ -32,8 +32,10 @@ from neon_solvers import AbstractSolver
 
 
 class DDGSolver(AbstractSolver):
-    def __init__(self):
-        super().__init__(name="DuckDuckGo", priority=75, config={"lang": "en"},
+    def __init__(self, config=None):
+        config = config or {}
+        config["lang"] = "en"  # only supports english
+        super().__init__(name="DuckDuckGo", priority=75, config=config,
                          enable_cache=False, enable_tx=True)
         self.session = CachedSession(backend="memory", expire_after=timedelta(minutes=5))
 
