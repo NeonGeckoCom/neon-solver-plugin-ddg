@@ -31,11 +31,13 @@ from requests_cache import CachedSession
 
 
 class DDGSolver(QuestionSolver):
+    enable_tx = True
+    priority = 75
+
     def __init__(self, config=None):
         config = config or {}
         config["lang"] = "en"  # only supports english
-        super().__init__(name="DuckDuckGo", priority=75, config=config,
-                         enable_cache=False, enable_tx=True)
+        super().__init__(config)
         self.session = CachedSession(backend="memory", expire_after=timedelta(minutes=5))
 
     def extract_keyword(self, query, lang="en"):
