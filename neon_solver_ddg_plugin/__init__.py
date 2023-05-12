@@ -26,12 +26,11 @@ from datetime import timedelta
 
 # TODO use padacioso and allow localization of "intents"
 import simplematch
+from ovos_plugin_manager.templates.solvers import QuestionSolver
 from requests_cache import CachedSession
 
-from neon_solvers import AbstractSolver
 
-
-class DDGSolver(AbstractSolver):
+class DDGSolver(QuestionSolver):
     def __init__(self, config=None):
         config = config or {}
         config["lang"] = "en"  # only supports english
