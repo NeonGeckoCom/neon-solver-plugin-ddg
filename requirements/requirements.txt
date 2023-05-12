@@ -1,4 +1,4 @@
 simplematch
 requests
 requests_cache
-ovos-plugin-manager
+ovos-plugin-manager>=0.0.23a13
