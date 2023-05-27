@@ -215,6 +215,23 @@ class DDGSolver(QuestionSolver):
         return steps
 
 
+DUCK_PERSONA = {
+    "gender": "male",
+    "attitudes": {
+        "//": "this is WIP, a enum and value range will be defined later",
+        "normal": 100,
+        "funny": 0,
+        "sarcastic": 0,
+        "irritable": 0
+    },
+    "//": "these plugins are the brain of this persona",
+    "solvers": [
+        "neon_solver_ddg_plugin",
+        "ovos-solver-failure-plugin"
+    ]
+}
+
+
 if __name__ == "__main__":
     from neon_solver_ddg_plugin import DDGSolver
 
