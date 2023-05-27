@@ -26,14 +26,18 @@ from datetime import timedelta
 
 # TODO use padacioso and allow localization of "intents"
 import simplematch
+from ovos_plugin_manager.templates.solvers import QuestionSolver
 from requests_cache import CachedSession
 
-from neon_solvers import AbstractSolver
 
+class DDGSolver(QuestionSolver):
+    enable_tx = True
+    priority = 75
 
-class DDGSolver(AbstractSolver):
-    def __init__(self):
-        super(DDGSolver, self).__init__(name="DuckDuckGo", priority=75, config={"lang": "en"})
+    def __init__(self, config=None):
+        config = config or {}
+        config["lang"] = "en"  # only supports english
+        super().__init__(config)
         self.session = CachedSession(backend="memory", expire_after=timedelta(minutes=5))
 
     def extract_keyword(self, query, lang="en"):
@@ -213,6 +217,23 @@ class DDGSolver(AbstractSolver):
                   not k.endswith(" profile") and  # twitter profile
                   k != "instance of"]  # spammy and sounds bad when spokem
         return steps
+
+
+DUCK_PERSONA = {
+    "gender": "male",
+    "attitudes": {
+        "//": "this is WIP, a enum and value range will be defined later",
+        "normal": 100,
+        "funny": 0,
+        "sarcastic": 0,
+        "irritable": 0
+    },
+    "//": "these plugins are the brain of this persona",
+    "solvers": [
+        "neon_solver_ddg_plugin",
+        "ovos-solver-failure-plugin"
+    ]
+}
 
 
 if __name__ == "__main__":

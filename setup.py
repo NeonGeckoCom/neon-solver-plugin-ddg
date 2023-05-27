@@ -30,6 +30,9 @@ with open("./version.py", "r", encoding="utf-8") as v:
 
 
 PLUGIN_ENTRY_POINT = 'neon_solver_ddg_plugin=neon_solver_ddg_plugin:DDGSolver'
+PERSONA_ENTRY_POINT = 'neon-duck=neon_solver_ddg_plugin:DUCK_PERSONA'
+
+
 setup(
     name='neon_solver_ddg_plugin',
     version=version,
@@ -42,7 +45,8 @@ setup(
     packages=['neon_solver_ddg_plugin'],
     zip_safe=True,
     keywords='mycroft plugin utterance fallback query',
-    entry_points={'neon.plugin.solver': PLUGIN_ENTRY_POINT},
+    entry_points={'neon.plugin.solver': PLUGIN_ENTRY_POINT,
+                  "opm.plugin.persona": PERSONA_ENTRY_POINT},
     long_description=long_description,
     long_description_content_type='text/markdown'
 )
