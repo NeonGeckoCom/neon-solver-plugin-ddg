@@ -30,7 +30,7 @@ with open("./version.py", "r", encoding="utf-8") as v:
 
 
 PLUGIN_ENTRY_POINT = 'neon_solver_ddg_plugin=neon_solver_ddg_plugin:DDGSolver'
-PERSONA_ENTRY_POINT = 'duck=neon_solver_ddg_plugin:DUCK_PERSONA'
+PERSONA_ENTRY_POINT = 'neon-duck=neon_solver_ddg_plugin:DUCK_PERSONA'
 
 
 setup(
